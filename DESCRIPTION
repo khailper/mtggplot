@@ -1,19 +1,23 @@
 Package: mtggplot
-Title: What the Package Does (One Line, Title Case)
-Version: 0.0.0.9000
+Title: ggplot2 color palettes based on Magic: the Gathering
+Version: 0.1.0.9000
 Authors@R: 
-    person(given = "First",
-           family = "Last",
+    person(given = "Karl",
+           family = "Hailperin",
            role = c("aut", "cre"),
-           email = "first.last@example.com",
-           comment = c(ORCID = "YOUR-ORCID-ID"))
-Description: What the package does (one paragraph).
-License: What license it uses
+           email = "khailper@gmail.com"
+Description: ggplot2 color palettes based on Magic: the Gathering. also contains code for plots using these palettes or otherwise related to MtG that I post on Twitter (@khailper).
+License: MIT + file LICENSE
+URL: https://github.com/khailper/mtggplot
+BugReports: https://github.com/khailper/mtggplot/issues
 Encoding: UTF-8
 LazyData: true
 Imports: 
     ggplot2
 Suggests: 
-    scryr (>= 0.2.0.9000),
+    scryr (>= 0.3.0.9000),
     tidyverse,
-    cowplot
+    cowplot,
+    knitr,
+    rmarkdown
+VignetteBuilder: knitr
