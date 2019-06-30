@@ -50,6 +50,7 @@ create_hits_distibution <- function(land_count, deck_size){
 ```
 
 ```{r create_limited_data}
+limited_data <- map_dfr(5:12, create_hits_distibution, deck_size = 40)
 ```
 
 ```{r limited_gif}
@@ -80,5 +81,39 @@ limited_gif <-  ggplot(limited_data,
        caption = "Created by Karl Hailperin (@khailper)")
 
 limited_gif
+```
+
+```{r create_constructed_data}
+constructed_data <- map_dfr(12:19, create_hits_distibution, deck_size = 60)
+```
+
+```{r constructed_gif}
+constructed_gif <-  ggplot(constructed_data, 
+                       aes(turn,  
+                           y = prob_of_at_least_one_hit)) + 
+  geom_area(fill = "white") +
+  geom_hline(yintercept = 0.5, color = "red")+ 
+  geom_text(x = 4.5, 
+            y = 0.5, 
+            label = "It's a coin toss.", 
+            vjust = -0.5,
+            color = "red",
+            size = 6) +
+  geom_text(x = 4.5, y = 0.8, label = ":(", color = "white", size = 10) + 
+  geom_text(x = 4.5, y = 0.1, label = ":)", color = "black", size = 10) + 
+  transition_states(possible_hits, transition_length = 1, state_length = 2) +
+  theme_cowplot() +
+  theme(panel.background = element_rect(fill = 'black')) +
+  scale_x_continuous(expand = c(0, 0)) +
+  scale_y_continuous(labels = percent_format(), 
+                     limits = c(0, 1),
+                     expand = c(0, 0)) +
+  labs(y = "Probability that you find the land you need...", 
+       x = "... by turn X (on the play).",
+       title = "Can you expect to draw the land your hand needs?",
+       subtitle = "On-color lands in your Constructed deck: {next_state}",
+       caption = "Created by Karl Hailperin (@khailper)")
+
+constructed_gif
 ```
 
