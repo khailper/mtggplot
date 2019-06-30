@@ -38,8 +38,8 @@ create_hits_distibution_multi_turns <- function(land_count){
                          m = land_count,
                          # non-land cards (or off-color lands)
                          # assume we're on the play
-                         n = 35 - (turn + land_count),
-                         k = 1),
+                         n = 35 - (land_count),
+                         k = turn - 1),
            possible_hits = land_count
     ) %>%
     group_by(turn, possible_hits) %>%
