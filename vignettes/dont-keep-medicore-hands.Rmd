@@ -29,21 +29,21 @@ we'll start by calculating the probabilites for 40 card decks.
 ```{r}
 create_hits_distibution_multi_turns <- function(land_count){
   tibble(turn = 2:6) %>% 
-    # mental model by anaology: on turn 3, prob that you drew a land on turn 2, 
-    # plus the the probability that you draw one on 3 given you didn't, plus
-    # prob you draw on 3 given you did
-    mutate(previous_hits = map(turn, ~ seq(0, .x - 2))) %>%
+    # mental model by anology: on turn 3, prob that you drew a land on either 
+    # of your two draw steps, plus the probability you drew two lands between
+    # the two draw steps
+    mutate(total_hits = map(turn, ~ seq(1, .x - 1))) %>%
     unnest() %>%
-    mutate(prob = dhyper(x = 1,
-                         m = land_count - previous_hits,
+    mutate(prob = dhyper(x = total_hits,
+                         m = land_count,
                          # non-land cards (or off-color lands)
-                         n = 35 - turn - (land_count - previous_hits),
                          # assume we're on the play
+                         n = 35 - (turn + land_count),
                          k = 1),
            possible_hits = land_count
     ) %>%
     group_by(turn, possible_hits) %>%
-    mutate(prob_of_at_least_one_hit = sum(prob)) %>%
+    summarise(prob_of_at_least_one_hit = sum(prob)) %>%
     identity()
 }
 
@@ -62,7 +62,9 @@ limited_gif <-  ggplot(limited_data,
   theme_cowplot() +
   theme(panel.background = element_rect(fill = 'black')) +
   scale_x_continuous(expand = c(0, 0)) +
-  scale_y_continuous(labels = percent_format()) +
+  scale_y_continuous(labels = percent_format(), 
+                     limits = c(0, 1),
+                     expand = c(0, 0)) +
   labs(y = "Probability that you find the land you need...", 
        x = "... by turn X (on the play).",
        title = "Can you expect to draw the land your hand needs?",
