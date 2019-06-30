@@ -37,7 +37,7 @@ create_hits_distibution_multi_turns <- function(land_count){
     mutate(prob = dhyper(x = 1,
                          m = land_count - previous_hits,
                          # non-land cards (or off-color lands)
-                         n = 35 - turn - land_count,
+                         n = 35 - turn - (land_count - previous_hits),
                          # assume we're on the play
                          k = 1),
            possible_hits = land_count
