@@ -26,8 +26,8 @@ A classic problem is should you keep a hand that has important spells, but not
 the right lands to cast them. Limited is my typical non-causual format, so 
 we'll start by calculating the probabilites for 40 card decks.
 
-```{r}
-create_hits_distibution_multi_turns <- function(land_count){
+```{r create_hits_distibution}
+create_hits_distibution <- function(land_count, deck_size){
   tibble(turn = 2:7) %>% 
     # mental model by anology: on turn 3, prob that you drew a land on either 
     # of your two draw steps, plus the probability you drew two lands between
@@ -38,7 +38,7 @@ create_hits_distibution_multi_turns <- function(land_count){
                          m = land_count,
                          # non-land cards (or off-color lands)
                          # assume we're on the play
-                         n = 35 - (land_count),
+                         n = deck_size - 7 - (land_count),
                          k = turn - 1),
            possible_hits = land_count
     ) %>%
@@ -50,7 +50,6 @@ create_hits_distibution_multi_turns <- function(land_count){
 ```
 
 ```{r create_limited_data}
-limited_data <- map_dfr(5:12, create_hits_distibution_multi_turns)
 ```
 
 ```{r limited_gif}
