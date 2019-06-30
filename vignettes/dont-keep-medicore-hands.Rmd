@@ -32,18 +32,19 @@ create_hits_distibution_multi_turns <- function(land_count){
     # mental model by anaology: on turn 3, prob that you drew a land on turn 2, 
     # plus the the probability that you draw one on 3 given you didn't, plus
     # prob you draw on 3 given you did
-    mutate(previous_hits = map(turn, ~ seq(0, .x -2))) %>%
+    mutate(previous_hits = map(turn, ~ seq(0, .x - 2))) %>%
     unnest() %>%
     mutate(prob = dhyper(x = 1,
                          m = land_count - previous_hits,
                          # non-land cards (or off-color lands)
-                         n = 34 - turn - land_count,
+                         n = 35 - turn - land_count,
                          # assume we're on the play
                          k = 1),
            possible_hits = land_count
     ) %>%
     group_by(turn, possible_hits) %>%
-    summarise(prob_of_at_least_one_hit = sum(prob))
+    mutate(prob_of_at_least_one_hit = sum(prob)) %>%
+    identity()
 }
 
 ```
@@ -59,14 +60,12 @@ limited_gif <-  ggplot(limited_data,
   geom_ribbon(ymin = 0, fill = "white") +
   transition_states(possible_hits, transition_length = 1, state_length = 2) +
   theme_cowplot() +
-  scale_x_continuous(expand = c(0, 0)) +
-  scale_y_continuous(labels = percent_format(), 
-                     limits = c(0,1), 
-                     expand = c(0, 0)) + 
   theme(panel.background = element_rect(fill = 'black')) +
+  scale_x_continuous(expand = c(0, 0)) +
+  scale_y_continuous(labels = percent_format()) +
   labs(y = "Probability that you find the land you need...", 
        x = "... by turn X (on the play).",
-       title = "How many hits can you expect from Glacial Revelation?",
+       title = "Can you expect to draw the land your hand needs?",
        subtitle = "On-color lands in your Limited deck: {next_state}",
        caption = "Created by Karl Hailperin (@khailper)")
 
