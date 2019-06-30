@@ -28,7 +28,7 @@ we'll start by calculating the probabilites for 40 card decks.
 
 ```{r}
 create_hits_distibution_multi_turns <- function(land_count){
-  tibble(turn = 2:6) %>% 
+  tibble(turn = 2:7) %>% 
     # mental model by anology: on turn 3, prob that you drew a land on either 
     # of your two draw steps, plus the probability you drew two lands between
     # the two draw steps
@@ -56,8 +56,17 @@ limited_data <- map_dfr(5:12, create_hits_distibution_multi_turns)
 ```{r limited_gif}
 limited_gif <-  ggplot(limited_data, 
                        aes(turn,  
-                           ymax = prob_of_at_least_one_hit)) + 
-  geom_ribbon(ymin = 0, fill = "white") +
+                           y = prob_of_at_least_one_hit)) + 
+  geom_area(fill = "white") +
+  geom_hline(yintercept = 0.5, color = "red")+ 
+  geom_text(x = 4.5, 
+            y = 0.5, 
+            label = "It's a coin toss.", 
+            vjust = -0.5,
+            color = "red",
+            size = 6) +
+  geom_text(x = 4.5, y = 0.8, label = ":(", color = "white", size = 10) + 
+  geom_text(x = 4.5, y = 0.1, label = ":)", color = "black", size = 10) + 
   transition_states(possible_hits, transition_length = 1, state_length = 2) +
   theme_cowplot() +
   theme(panel.background = element_rect(fill = 'black')) +
