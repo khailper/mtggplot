@@ -5,7 +5,7 @@ Authors@R:
     person(given = "Karl",
            family = "Hailperin",
            role = c("aut", "cre"),
-           email = "khailper@gmail.com"
+           email = "khailper@gmail.com")
 Description: ggplot2 color palettes based on Magic: the Gathering. also contains code for plots using these palettes or otherwise related to MtG that I post on Twitter (@khailper).
 License: MIT + file LICENSE
 URL: https://github.com/khailper/mtggplot
@@ -21,3 +21,4 @@ Suggests:
     knitr,
     rmarkdown
 VignetteBuilder: knitr
+RoxygenNote: 6.1.1

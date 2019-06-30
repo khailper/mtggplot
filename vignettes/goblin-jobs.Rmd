@@ -1,0 +1,99 @@
+---
+title: "Goblin Jobs"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{goblin-jobs}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+
+```{r setup}
+library(tidyverse)
+library(cowplot)
+library(scryr)
+library(mtggplot)
+
+# get all creatures of type Goblin
+goblins <- scry_cards("t:creature t:goblin") %>% 
+  mutate(creature_types = map(type_line, extract_subtypes) %>% 
+           unlist() %>%
+           # we want to know what their non-Goblin types are
+           str_remove("Goblin") %>% 
+           str_trim()
+         )
+
+```
+
+```{r count_type_by_color}
+goblins_count_type <- goblins %>% 
+  mutate(colors = map_chr(colors, relabel_mtg_color)) %>% 
+  count(creature_types, colors)
+
+head(goblins_count_type)
+```
+
+We want to sort by total goblins across colors (for display plotting)
+
+```{r type_reorder}
+goblins_count_type <- goblins_count_type %>% 
+  group_by(creature_types) %>% 
+  mutate(total_of_type = sum(n)) %>% 
+  ungroup() %>% 
+  # -total_of_type so head(works)
+  mutate(creature_types = fct_reorder(creature_types, total_of_type)) %>% 
+  arrange(-total_of_type)
+
+head(goblins_count_type)
+```
+
+Interesting. Most goblins are just "Goblin". Let's vizualize.
+```{r prelim_goblin_jobs_plot}
+ggplot(goblins_count_type, aes(creature_types, n, fill = colors)) + 
+  geom_col() + 
+  coord_flip() + 
+  scale_fill_manual(values = mtg_cols())
+```
+
+The Goblins with multiple types might be worth accounting for.
+```{r multi_type}
+goblins_split_type <- goblins %>% 
+  mutate(creature_types = str_split(creature_types, pattern = " ")) %>% 
+  unnest(creature_types, .drop = FALSE)
+```
+
+```{r type_type_and_reorder_take_2}
+goblins_count_type <- goblins_split_type %>% 
+  mutate(colors = map_chr(colors, relabel_mtg_color)) %>% 
+  count(creature_types, colors)
+
+goblins_count_type <- goblins_count_type %>% 
+  group_by(creature_types) %>% 
+  mutate(total_of_type = sum(n)) %>% 
+  ungroup() %>% 
+  filter(total_of_type >= 5) %>% 
+  mutate(creature_types = fct_reorder(creature_types, total_of_type)) %>% 
+  arrange(creature_types)
+```
+
+```{r goblin_jobs_plot}
+ggplot(goblins_count_type, aes(creature_types, n, fill = colors)) + 
+  geom_col() + 
+  coord_flip() + 
+  scale_fill_manual(values = mtg_cols(), 
+                    breaks = c("Red", "Black", "Multicolored", "Green", 
+                               "Colorless")) + 
+  theme_minimal_vgrid() + 
+  labs(x = "Creature type",
+       y = "Number of goblins",
+       fill = "Color",
+       title = "What do goblins do for a living? Often, nothing?!",
+       subtitle = "Most common creature types of Goblins (or lack thereof)", 
+       caption = "Created by Karl Hailperin (@khailper)")
+```
