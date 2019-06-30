@@ -28,21 +28,22 @@ we'll start by calculating the probabilites for 40 card decks.
 
 ```{r}
 create_hits_distibution_multi_turns <- function(land_count){
-  tibble(hits = 1:land_count, turn = list(3:8)) %>% 
-    unnest() %>% 
-    mutate(prob = dhyper(x = hits, 
-                         m = land_count, 
-                         # non-snow cards
-                         # assume on the draw
-                         n = 34 - turn - land_count, 
-                         k = turn),
+  tibble(turn = 2:6) %>% 
+    # mental model by anaology: on turn 3, prob that you drew a land on turn 2, 
+    # plus the the probability that you draw one on 3 given you didn't, plus
+    # prob you draw on 3 given you did
+    mutate(previous_hits = map(turn, ~ seq(0, .x -2))) %>%
+    unnest() %>%
+    mutate(prob = dhyper(x = 1,
+                         m = land_count - previous_hits,
+                         # non-land cards (or off-color lands)
+                         n = 34 - turn - land_count,
+                         # assume we're on the play
+                         k = 1),
            possible_hits = land_count
-    ) %>% 
-    # arrange() shouldn't be needed, but just in ase
-    arrange(turn) %>% 
-    group_by(turn) %>% 
-    mutate(prob_of_at_least_one_hit = cumsum(prob)) %>% 
-    ungroup()
+    ) %>%
+    group_by(turn, possible_hits) %>%
+    summarise(prob_of_at_least_one_hit = sum(prob))
 }
 
 ```
@@ -53,17 +54,20 @@ limited_data <- map_dfr(5:12, create_hits_distibution_multi_turns)
 
 ```{r limited_gif}
 limited_gif <-  ggplot(limited_data, 
-                       aes(turn,  prob_of_at_least_one_hit)) + 
-  geom_area(fill = "white") +
-  transition_states(hits, transition_length = 1, state_length = 2) +
+                       aes(turn,  
+                           ymax = prob_of_at_least_one_hit)) + 
+  geom_ribbon(ymin = 0, fill = "white") +
+  transition_states(possible_hits, transition_length = 1, state_length = 2) +
   theme_cowplot() +
-  scale_x_continuous(breaks = pretty_breaks(n = 6)) +
-  scale_y_continuous(labels = percent) + 
+  scale_x_continuous(expand = c(0, 0)) +
+  scale_y_continuous(labels = percent_format(), 
+                     limits = c(0,1), 
+                     expand = c(0, 0)) + 
   theme(panel.background = element_rect(fill = 'black')) +
-  labs(y = "Probability you find the land you need...", 
+  labs(y = "Probability that you find the land you need...", 
        x = "... by turn X (on the play).",
        title = "How many hits can you expect from Glacial Revelation?",
-       subtitle = "On-color lands in your Limited deck:{next_state}",
+       subtitle = "On-color lands in your Limited deck: {next_state}",
        caption = "Created by Karl Hailperin (@khailper)")
 
 limited_gif
