@@ -1,0 +1,41 @@
+---
+title: "History of new commanders"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{history-of-cmders}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+
+```{r setup}
+library(tidyverse)
+library(cowplot)
+library(gganimate)
+# devtools::install_github("hadley/emo")
+library(emo)
+library(scryr)
+library(mtggplot)
+```
+
+How has the number of commanders available to each color grown over time? 
+Technically, we could just use `scry_cards("is:commander")`, but we using a more
+complicated search because we want to include at least one card from each set 
+that added cards to the format. That will make it easier to count new commanders
+by set, even when that number is zero. We're also exluding a few promotional 
+sets (book promos, 
+[Nalathni Dragon](https://scryfall.com/card/pdrc/1/nalathni-dragon), and Game 
+Night).
+```{r}
+legal_cmder_search <- scry_cards("(t:creature or o:'can be your commander') not:reprint f:commander -set:pred -set:gnt -set:phpr")
+
+# writing to local file to avoid having to re-run query
+# write_rds(legal_cmder_search, here::here("vignettes", "legal_cmder_search.rds"))
+```
+

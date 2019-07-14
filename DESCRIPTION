@@ -19,6 +19,11 @@ Suggests:
     tidyverse,
     cowplot,
     knitr,
-    rmarkdown
+    rmarkdown,
+    emo (>= 0.0.0.9000),
+    here
 VignetteBuilder: knitr
 RoxygenNote: 6.1.1
+Remotes:  
+    hadley/emo,
+    khailper/scryr
