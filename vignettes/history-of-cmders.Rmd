@@ -16,11 +16,12 @@ knitr::opts_chunk$set(
 
 ```{r setup}
 library(tidyverse)
+library(lubridate)
 library(cowplot)
+library(scryr)
 library(gganimate)
 # devtools::install_github("hadley/emo")
 library(emo)
-library(scryr)
 library(mtggplot)
 ```
 
@@ -29,13 +30,17 @@ Technically, we could just use `scry_cards("is:commander")`, but we using a more
 complicated search because we want to include at least one card from each set 
 that added cards to the format. That will make it easier to count new commanders
 by set, even when that number is zero. We're also exluding a few promotional 
-sets (book promos, 
-[Nalathni Dragon](https://scryfall.com/card/pdrc/1/nalathni-dragon), and Game 
-Night).
+sets ([book promos](https://scryfall.com/sets/phpr), 
+[*Game Night*](https://scryfall.com/search?q=set%3Agnt+not%3Areprint&unique=cards&as=grid&order=name), 
+and
+[Nalathni Dragon](https://scryfall.com/card/pdrc/1/nalathni-dragon)).
 ```{r}
-legal_cmder_search <- scry_cards("(t:creature or o:'can be your commander') not:reprint f:commander -set:pred -set:gnt -set:phpr")
+legal_cmder_search <- scry_cards("(t:creature or o:'can be your commander') not:reprint f:commander -set:pred -set:gnt -set:phpr") %>% 
+  # keep object smaller by just using columns we need
+  select(name, released_at, type_line, colors, color_identity, set_name)
 
 # writing to local file to avoid having to re-run query
 # write_rds(legal_cmder_search, here::here("vignettes", "legal_cmder_search.rds"))
+# legal_cmder_search <- read_rds(here::here("vignettes", "legal_cmder_search.rds"))
 ```
 
