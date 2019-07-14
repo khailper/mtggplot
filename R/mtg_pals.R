@@ -7,7 +7,7 @@ mtg_colors <- c(
   `Black` = "#150b00",
   `Red` = "#d3202a",
   `Green` = "#00733e",
-  `Multicolored` = "#e1cd92",
+  `Multicolored` = "#F3DB6F",
   `Colorless` = "#c6c5c5"
 )
 
