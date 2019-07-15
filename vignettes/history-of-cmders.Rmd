@@ -20,8 +20,6 @@ library(lubridate)
 library(cowplot)
 library(scryr)
 library(gganimate)
-# devtools::install_github("hadley/emo")
-library(emo)
 library(mtggplot)
 ```
 
@@ -31,11 +29,13 @@ complicated search because we want to include at least one card from each set
 that added cards to the format. That will make it easier to count new commanders
 by set, even when that number is zero. We're also exluding a few promotional 
 sets ([book promos](https://scryfall.com/sets/phpr), 
-[*Game Night*](https://scryfall.com/search?q=set%3Agnt+not%3Areprint&unique=cards&as=grid&order=name), 
-and
-[Nalathni Dragon](https://scryfall.com/card/pdrc/1/nalathni-dragon)).
-```{r}
-legal_cmder_search <- scry_cards("(t:creature or o:'can be your commander') not:reprint f:commander -set:pred -set:gnt -set:phpr") %>% 
+[*Game Night*](https://scryfall.com/search?q=set%3Agnt), [the M19 Gift Pack](https://scryfall.com/sets/g18), 
+and [Nalathni Dragon](https://scryfall.com/card/pdrc/1/nalathni-dragon)). We're 
+also excluding Archenemy and Planechase because they each has one non-legendary 
+creature (and three other cards) that would see print shortly thereafter in M11
+and Zendikar, respectively.
+```{r get_data}
+legal_cmder_search <- scry_cards("(t:creature or is:commander') not:reprint f:commander -set:pdrc -set:gnt -set:phpr -set:g18 -set:arc -set:hop") %>% 
   # keep object smaller by just using columns we need
   select(name, released_at, type_line, colors, color_identity, set_name)
 
@@ -44,3 +44,68 @@ legal_cmder_search <- scry_cards("(t:creature or o:'can be your commander') not:
 # legal_cmder_search <- read_rds(here::here("vignettes", "legal_cmder_search.rds"))
 ```
 
+To wrangle the data into the shape we want it, we to a) make sure sets are 
+sorted by release date (`released_at`), b) count number of new legal commanders 
+by set and color identical (lumping all 2+ color commanders together), c) 
+do so in a way that includes a `0` for set/color combinations with no new
+commanders, and d) total number of commanders by color id to date for each set.
+
+```{r summarize_data}
+legal_cmder_search <- legal_cmder_search %>% 
+  # released_at is read in from the API as string rather than a date
+  mutate(released_at = ymd(released_at),
+         set_name = fct_reorder(set_name, released_at),
+         is_cmder = str_detect(type_line, "Legendary"),
+         color_identity = map_chr(color_identity, relabel_mtg_color))
+  
+
+cmd_count <- legal_cmder_search %>% 
+  count(set_name, color_identity, is_cmder) %>% 
+  pivot_wider(names_from = is_cmder, 
+              values_from = n, 
+              values_fill = list(n = 0)) %>% 
+  select(set_name, color_identity, new_cmd = `TRUE`) %>% 
+  complete(set_name, color_identity, fill = list(new_cmd = 0)) %>% 
+  group_by(set_name) %>% 
+  mutate(cmd_to_date = cumsum(new_cmd)) %>% 
+  ungroup()
+
+# we want to add some trivia to set_name
+# code to find oldest color/color id mismatch (Homelands: Daughter of Autumn)
+# legal_cmder_search %>%
+#   filter(str_detect(type_line, "Legendary"),
+#          !map2_lgl(colors, color_identity,identical))
+# first mono-colored commanders 
+# filter(cmd_count, new_cmd > 0, color_identity != "Multicolored")
+# first colorless commanders
+# filter(cmd_count, new_cmd > 0, color_identity == "Colorless")
+
+cmd_count <- cmd_count %>% 
+  mutate(set_name = str_replace(set_name, "Legends", "LEGENDS!!!"),
+         set_name = str_replace(set_name, "Ice Age", 
+                                "Ice Age (1st mono-colored commanders: General Jarkeld(W) & Márton Stromgald(R))"),
+         set_name = str_replace(set_name, "Homlands", 
+                                "Homelands (1st commander where color =/= color ID: Daughter of Autumn"),
+        set_name = str_replace(set_name, "Visions",
+                               "Visions (Last Standard-legal expansion with no new Legends)"),
+        set_name = str_replace(set_name, "Stronghold",
+                               "Stronghold (1st 5-color commander: Sliver Queen)"),
+        set_name = str_replace(set_name, "Urza's Saga",
+                               "Urza's Saga (1st colorless commander: Karn, Silver Golem)"),
+        set_name = str_replace(set_name, "Urza's Destiny",
+                               "Urza's Destiny (Oldest banned commander: Rofellos, Llanowar Emissary)"),
+        set_name = str_replace(set_name, "Odyssey", 
+                               "Odyssey (With apologies to @CubeApril)"),
+        set_name = str_replace(set_name, "Commander 2011", 
+                               "Commander 2011 (1st Commander-specific product)"),
+        set_name = str_replace(set_name, "Magic 2013", 
+                               "Magic 2013 (1st core set with new Legends)"),
+        set_name = str_replace(set_name, "Commander 2014", 
+                               "Commander 2014 (Planswalker commanders)"),
+        set_name = str_replace(set_name, "Commander 2016", 
+                               "Commander 2016 (4-color commanders! Partner!)"),
+        set_name = str_replace(set_name, "Battlebond", 
+                               "Battlebond (Partner with)"))
+```
+
+Now we just need to plot and animate our data.
