@@ -91,7 +91,7 @@ cmd_count <- cmd_count %>%
          set_name = str_replace(set_name, "Ice Age", 
                                 "Ice Age (1st mono-colored commanders: General Jarkeld(W)\n& Márton Stromgald(R))"),
          set_name = str_replace(set_name, "Homelands", 
-                                "Homelands (1st commander where color =/= color ID: Daughter of Autumn"),
+                                "Homelands (1st commander where \ncolor =/= color ID: Daughter of Autumn"),
         set_name = str_replace(set_name, "Visions",
                                "Visions (Last Standard-legal expansion with \nno new Legends)"),
         set_name = str_replace(set_name, "Stronghold",
@@ -116,7 +116,7 @@ cmd_count <- cmd_count %>%
 
 Now we just need to plot and animate our data.
 
-```{r buil_anim}
+```{r build_anim}
 # we can't directly reference the columns we need for labels, so we need to 
 # build helper functions
 get_set_name <- function(frame_date){
@@ -137,8 +137,8 @@ cmd_anim <- ggplot(cmd_count, aes(x = released_at,
                                  y = cmd_to_date, 
                                  color = color_identity,
                                  group = color_identity)) +
-  geom_line(size = 1) + 
-  geom_point(size = 2) +
+  geom_line(size = 1, key_glyph = "timeseries") + 
+  geom_point(size = 2, key_glyph = "timeseries") +
   scale_color_manual(values = mtg_cols()) +
   theme_cowplot() +
   # color code taking from card back
