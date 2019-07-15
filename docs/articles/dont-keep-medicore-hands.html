@@ -58,6 +58,9 @@
     <li>
       <a href="../articles/goblin-jobs.html">Goblin Jobs</a>
     </li>
+    <li>
+      <a href="../articles/history-of-cmders.html">History of new commanders</a>
+    </li>
   </ul>
 </li>
       </ul>
@@ -91,12 +94,12 @@
     
     
 <div class="sourceCode" id="cb1"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb1-1" title="1"><span class="kw"><a href="https://www.rdocumentation.org/packages/base/topics/library">library</a></span>(tidyverse)</a>
-<a class="sourceLine" id="cb1-2" title="2"><span class="co">#&gt; -- Attaching packages ----------------------------------------------------------- tidyverse 1.2.1 --</span></a>
-<a class="sourceLine" id="cb1-3" title="3"><span class="co">#&gt; v ggplot2 3.2.0     v purrr   0.3.2</span></a>
-<a class="sourceLine" id="cb1-4" title="4"><span class="co">#&gt; v tibble  2.1.3     v dplyr   0.8.2</span></a>
-<a class="sourceLine" id="cb1-5" title="5"><span class="co">#&gt; v tidyr   0.8.3     v stringr 1.4.0</span></a>
-<a class="sourceLine" id="cb1-6" title="6"><span class="co">#&gt; v readr   1.3.1     v forcats 0.4.0</span></a>
-<a class="sourceLine" id="cb1-7" title="7"><span class="co">#&gt; -- Conflicts -------------------------------------------------------------- tidyverse_conflicts() --</span></a>
+<a class="sourceLine" id="cb1-2" title="2"><span class="co">#&gt; -- Attaching packages --------------------------------------------------------- tidyverse 1.2.1 --</span></a>
+<a class="sourceLine" id="cb1-3" title="3"><span class="co">#&gt; v ggplot2 3.2.0          v purrr   0.3.2     </span></a>
+<a class="sourceLine" id="cb1-4" title="4"><span class="co">#&gt; v tibble  2.1.3          v dplyr   0.8.3     </span></a>
+<a class="sourceLine" id="cb1-5" title="5"><span class="co">#&gt; v tidyr   0.8.3.9000     v stringr 1.4.0     </span></a>
+<a class="sourceLine" id="cb1-6" title="6"><span class="co">#&gt; v readr   1.3.1          v forcats 0.4.0</span></a>
+<a class="sourceLine" id="cb1-7" title="7"><span class="co">#&gt; -- Conflicts ------------------------------------------------------------ tidyverse_conflicts() --</span></a>
 <a class="sourceLine" id="cb1-8" title="8"><span class="co">#&gt; x dplyr::filter() masks stats::filter()</span></a>
 <a class="sourceLine" id="cb1-9" title="9"><span class="co">#&gt; x dplyr::lag()    masks stats::lag()</span></a>
 <a class="sourceLine" id="cb1-10" title="10"><span class="kw"><a href="https://www.rdocumentation.org/packages/base/topics/library">library</a></span>(scales)</a>
@@ -110,13 +113,14 @@
 <a class="sourceLine" id="cb1-18" title="18"><span class="co">#&gt;     col_factor</span></a>
 <a class="sourceLine" id="cb1-19" title="19"><span class="kw"><a href="https://www.rdocumentation.org/packages/base/topics/library">library</a></span>(cowplot)</a>
 <a class="sourceLine" id="cb1-20" title="20"><span class="co">#&gt; </span></a>
-<a class="sourceLine" id="cb1-21" title="21"><span class="co">#&gt; *******************************************************</span></a>
-<a class="sourceLine" id="cb1-22" title="22"><span class="co">#&gt; Note: cowplot does not change the default ggplot2 theme</span></a>
-<a class="sourceLine" id="cb1-23" title="23"><span class="co">#&gt; anymore. To recover the previous behavior, execute:</span></a>
-<a class="sourceLine" id="cb1-24" title="24"><span class="co">#&gt;   theme_set(theme_cowplot())</span></a>
-<a class="sourceLine" id="cb1-25" title="25"><span class="co">#&gt; *******************************************************</span></a>
-<a class="sourceLine" id="cb1-26" title="26"><span class="kw"><a href="https://www.rdocumentation.org/packages/base/topics/library">library</a></span>(gganimate)</a>
-<a class="sourceLine" id="cb1-27" title="27"><span class="kw"><a href="https://www.rdocumentation.org/packages/base/topics/library">library</a></span>(mtggplot)</a></code></pre></div>
+<a class="sourceLine" id="cb1-21" title="21"><span class="co">#&gt; ********************************************************</span></a>
+<a class="sourceLine" id="cb1-22" title="22"><span class="co">#&gt; Note: As of version 1.0.0, cowplot does not change the</span></a>
+<a class="sourceLine" id="cb1-23" title="23"><span class="co">#&gt;   default ggplot2 theme anymore. To recover the previous</span></a>
+<a class="sourceLine" id="cb1-24" title="24"><span class="co">#&gt;   behavior, execute:</span></a>
+<a class="sourceLine" id="cb1-25" title="25"><span class="co">#&gt;   theme_set(theme_cowplot())</span></a>
+<a class="sourceLine" id="cb1-26" title="26"><span class="co">#&gt; ********************************************************</span></a>
+<a class="sourceLine" id="cb1-27" title="27"><span class="kw"><a href="https://www.rdocumentation.org/packages/base/topics/library">library</a></span>(gganimate)</a>
+<a class="sourceLine" id="cb1-28" title="28"><span class="kw"><a href="https://www.rdocumentation.org/packages/base/topics/library">library</a></span>(mtggplot)</a></code></pre></div>
 <p>A classic problem is should you keep a hand that has important spells, but not the right lands to cast them. Limited is my typical non-causual format, so we’ll start by calculating the probabilites for 40 card decks.</p>
 <div class="sourceCode" id="cb2"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb2-1" title="1">create_hits_distibution &lt;-<span class="st"> </span><span class="cf">function</span>(land_count, deck_size){</a>
 <a class="sourceLine" id="cb2-2" title="2">  <span class="kw">tibble</span>(<span class="dt">turn =</span> <span class="dv">2</span><span class="op">:</span><span class="dv">7</span>) <span class="op">%&gt;%</span><span class="st"> </span></a>
@@ -137,7 +141,30 @@
 <a class="sourceLine" id="cb2-17" title="17"><span class="st">    </span><span class="kw">summarise</span>(<span class="dt">prob_of_at_least_one_hit =</span> <span class="kw"><a href="https://www.rdocumentation.org/packages/base/topics/sum">sum</a></span>(prob)) <span class="op">%&gt;%</span></a>
 <a class="sourceLine" id="cb2-18" title="18"><span class="st">    </span><span class="kw"><a href="https://www.rdocumentation.org/packages/base/topics/identity">identity</a></span>()</a>
 <a class="sourceLine" id="cb2-19" title="19">}</a></code></pre></div>
-<div class="sourceCode" id="cb3"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb3-1" title="1">limited_data &lt;-<span class="st"> </span><span class="kw">map_dfr</span>(<span class="dv">5</span><span class="op">:</span><span class="dv">12</span>, create_hits_distibution, <span class="dt">deck_size =</span> <span class="dv">40</span>)</a></code></pre></div>
+<div class="sourceCode" id="cb3"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb3-1" title="1">limited_data &lt;-<span class="st"> </span><span class="kw">map_dfr</span>(<span class="dv">5</span><span class="op">:</span><span class="dv">12</span>, create_hits_distibution, <span class="dt">deck_size =</span> <span class="dv">40</span>)</a>
+<a class="sourceLine" id="cb3-2" title="2"><span class="co">#&gt; Warning: `cols` is now required.</span></a>
+<a class="sourceLine" id="cb3-3" title="3"><span class="co">#&gt; Please use `cols = c(total_hits)`</span></a>
+<a class="sourceLine" id="cb3-4" title="4"></a>
+<a class="sourceLine" id="cb3-5" title="5"><span class="co">#&gt; Warning: `cols` is now required.</span></a>
+<a class="sourceLine" id="cb3-6" title="6"><span class="co">#&gt; Please use `cols = c(total_hits)`</span></a>
+<a class="sourceLine" id="cb3-7" title="7"></a>
+<a class="sourceLine" id="cb3-8" title="8"><span class="co">#&gt; Warning: `cols` is now required.</span></a>
+<a class="sourceLine" id="cb3-9" title="9"><span class="co">#&gt; Please use `cols = c(total_hits)`</span></a>
+<a class="sourceLine" id="cb3-10" title="10"></a>
+<a class="sourceLine" id="cb3-11" title="11"><span class="co">#&gt; Warning: `cols` is now required.</span></a>
+<a class="sourceLine" id="cb3-12" title="12"><span class="co">#&gt; Please use `cols = c(total_hits)`</span></a>
+<a class="sourceLine" id="cb3-13" title="13"></a>
+<a class="sourceLine" id="cb3-14" title="14"><span class="co">#&gt; Warning: `cols` is now required.</span></a>
+<a class="sourceLine" id="cb3-15" title="15"><span class="co">#&gt; Please use `cols = c(total_hits)`</span></a>
+<a class="sourceLine" id="cb3-16" title="16"></a>
+<a class="sourceLine" id="cb3-17" title="17"><span class="co">#&gt; Warning: `cols` is now required.</span></a>
+<a class="sourceLine" id="cb3-18" title="18"><span class="co">#&gt; Please use `cols = c(total_hits)`</span></a>
+<a class="sourceLine" id="cb3-19" title="19"></a>
+<a class="sourceLine" id="cb3-20" title="20"><span class="co">#&gt; Warning: `cols` is now required.</span></a>
+<a class="sourceLine" id="cb3-21" title="21"><span class="co">#&gt; Please use `cols = c(total_hits)`</span></a>
+<a class="sourceLine" id="cb3-22" title="22"></a>
+<a class="sourceLine" id="cb3-23" title="23"><span class="co">#&gt; Warning: `cols` is now required.</span></a>
+<a class="sourceLine" id="cb3-24" title="24"><span class="co">#&gt; Please use `cols = c(total_hits)`</span></a></code></pre></div>
 <div class="sourceCode" id="cb4"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb4-1" title="1">limited_gif &lt;-<span class="st">  </span><span class="kw">ggplot</span>(limited_data, </a>
 <a class="sourceLine" id="cb4-2" title="2">                       <span class="kw">aes</span>(turn,  </a>
 <a class="sourceLine" id="cb4-3" title="3">                           <span class="dt">y =</span> prob_of_at_least_one_hit)) <span class="op">+</span><span class="st"> </span></a>
@@ -166,7 +193,30 @@
 <a class="sourceLine" id="cb4-26" title="26"></a>
 <a class="sourceLine" id="cb4-27" title="27">limited_gif</a></code></pre></div>
 <p><img src="dont-keep-medicore-hands_files/figure-html/limited_gif-1.gif"><!-- --></p>
-<div class="sourceCode" id="cb5"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb5-1" title="1">constructed_data &lt;-<span class="st"> </span><span class="kw">map_dfr</span>(<span class="dv">12</span><span class="op">:</span><span class="dv">19</span>, create_hits_distibution, <span class="dt">deck_size =</span> <span class="dv">60</span>)</a></code></pre></div>
+<div class="sourceCode" id="cb5"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb5-1" title="1">constructed_data &lt;-<span class="st"> </span><span class="kw">map_dfr</span>(<span class="dv">12</span><span class="op">:</span><span class="dv">19</span>, create_hits_distibution, <span class="dt">deck_size =</span> <span class="dv">60</span>)</a>
+<a class="sourceLine" id="cb5-2" title="2"><span class="co">#&gt; Warning: `cols` is now required.</span></a>
+<a class="sourceLine" id="cb5-3" title="3"><span class="co">#&gt; Please use `cols = c(total_hits)`</span></a>
+<a class="sourceLine" id="cb5-4" title="4"></a>
+<a class="sourceLine" id="cb5-5" title="5"><span class="co">#&gt; Warning: `cols` is now required.</span></a>
+<a class="sourceLine" id="cb5-6" title="6"><span class="co">#&gt; Please use `cols = c(total_hits)`</span></a>
+<a class="sourceLine" id="cb5-7" title="7"></a>
+<a class="sourceLine" id="cb5-8" title="8"><span class="co">#&gt; Warning: `cols` is now required.</span></a>
+<a class="sourceLine" id="cb5-9" title="9"><span class="co">#&gt; Please use `cols = c(total_hits)`</span></a>
+<a class="sourceLine" id="cb5-10" title="10"></a>
+<a class="sourceLine" id="cb5-11" title="11"><span class="co">#&gt; Warning: `cols` is now required.</span></a>
+<a class="sourceLine" id="cb5-12" title="12"><span class="co">#&gt; Please use `cols = c(total_hits)`</span></a>
+<a class="sourceLine" id="cb5-13" title="13"></a>
+<a class="sourceLine" id="cb5-14" title="14"><span class="co">#&gt; Warning: `cols` is now required.</span></a>
+<a class="sourceLine" id="cb5-15" title="15"><span class="co">#&gt; Please use `cols = c(total_hits)`</span></a>
+<a class="sourceLine" id="cb5-16" title="16"></a>
+<a class="sourceLine" id="cb5-17" title="17"><span class="co">#&gt; Warning: `cols` is now required.</span></a>
+<a class="sourceLine" id="cb5-18" title="18"><span class="co">#&gt; Please use `cols = c(total_hits)`</span></a>
+<a class="sourceLine" id="cb5-19" title="19"></a>
+<a class="sourceLine" id="cb5-20" title="20"><span class="co">#&gt; Warning: `cols` is now required.</span></a>
+<a class="sourceLine" id="cb5-21" title="21"><span class="co">#&gt; Please use `cols = c(total_hits)`</span></a>
+<a class="sourceLine" id="cb5-22" title="22"></a>
+<a class="sourceLine" id="cb5-23" title="23"><span class="co">#&gt; Warning: `cols` is now required.</span></a>
+<a class="sourceLine" id="cb5-24" title="24"><span class="co">#&gt; Please use `cols = c(total_hits)`</span></a></code></pre></div>
 <div class="sourceCode" id="cb6"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb6-1" title="1">constructed_gif &lt;-<span class="st">  </span><span class="kw">ggplot</span>(constructed_data, </a>
 <a class="sourceLine" id="cb6-2" title="2">                       <span class="kw">aes</span>(turn,  </a>
 <a class="sourceLine" id="cb6-3" title="3">                           <span class="dt">y =</span> prob_of_at_least_one_hit)) <span class="op">+</span><span class="st"> </span></a>
