@@ -18,8 +18,8 @@ knitr::opts_chunk$set(
 library(tidyverse)
 library(lubridate)
 library(cowplot)
-library(scryr)
 library(gganimate)
+library(scryr)
 library(mtggplot)
 ```
 
@@ -60,14 +60,20 @@ legal_cmder_search <- legal_cmder_search %>%
   
 
 cmd_count <- legal_cmder_search %>% 
-  count(set_name, color_identity, is_cmder) %>% 
+  count(set_name, color_identity, is_cmder, released_at) %>% 
   pivot_wider(names_from = is_cmder, 
               values_from = n, 
               values_fill = list(n = 0)) %>% 
-  select(set_name, color_identity, new_cmd = `TRUE`) %>% 
+  select(set_name, color_identity, new_cmd = `TRUE`,released_at) %>% 
   complete(set_name, color_identity, fill = list(new_cmd = 0)) %>% 
-  group_by(set_name) %>% 
+  # to get fill() to work correctly
+  arrange(set_name, released_at) %>% 
+  group_by(color_identity) %>% 
   mutate(cmd_to_date = cumsum(new_cmd)) %>% 
+  ungroup() %>% 
+  group_by(set_name) %>% 
+  mutate(set_new_cmd = sum(new_cmd)) %>%
+  tidyr::fill(released_at) %>% 
   ungroup()
 
 # we want to add some trivia to set_name
@@ -83,17 +89,17 @@ cmd_count <- legal_cmder_search %>%
 cmd_count <- cmd_count %>% 
   mutate(set_name = str_replace(set_name, "Legends", "LEGENDS!!!"),
          set_name = str_replace(set_name, "Ice Age", 
-                                "Ice Age (1st mono-colored commanders: General Jarkeld(W) & Márton Stromgald(R))"),
-         set_name = str_replace(set_name, "Homlands", 
+                                "Ice Age (1st mono-colored commanders: General Jarkeld(W)\n& Márton Stromgald(R))"),
+         set_name = str_replace(set_name, "Homelands", 
                                 "Homelands (1st commander where color =/= color ID: Daughter of Autumn"),
         set_name = str_replace(set_name, "Visions",
-                               "Visions (Last Standard-legal expansion with no new Legends)"),
+                               "Visions (Last Standard-legal expansion with \nno new Legends)"),
         set_name = str_replace(set_name, "Stronghold",
                                "Stronghold (1st 5-color commander: Sliver Queen)"),
         set_name = str_replace(set_name, "Urza's Saga",
                                "Urza's Saga (1st colorless commander: Karn, Silver Golem)"),
         set_name = str_replace(set_name, "Urza's Destiny",
-                               "Urza's Destiny (Oldest banned commander: Rofellos, Llanowar Emissary)"),
+                               "Urza's Destiny (Oldest banned commander: Rofellos, \nLlanowar Emissary)"),
         set_name = str_replace(set_name, "Odyssey", 
                                "Odyssey (With apologies to @CubeApril)"),
         set_name = str_replace(set_name, "Commander 2011", 
@@ -109,3 +115,58 @@ cmd_count <- cmd_count %>%
 ```
 
 Now we just need to plot and animate our data.
+
+```{r buil_anim}
+# we can't directly reference the columns we need for labels, so we need to 
+# build helper functions
+get_set_name <- function(frame_date){
+  cmd_count %>% 
+    filter(released_at <= frame_date) %>% 
+    slice(n()) %>% 
+    pull(set_name) 
+}
+
+get_new_cmds <- function(frame_date){
+  cmd_count %>% 
+    filter(released_at <= frame_date) %>% 
+    slice(n()) %>% 
+    pull(set_new_cmd) 
+}
+
+cmd_anim <- ggplot(cmd_count, aes(x = released_at, 
+                                 y = cmd_to_date, 
+                                 color = color_identity,
+                                 group = color_identity)) +
+  geom_line(size = 1) + 
+  geom_point(size = 2) +
+  scale_color_manual(values = mtg_cols()) +
+  theme_cowplot() +
+  # color code taking from card back
+  theme(panel.background = element_rect(fill = "lightsteelblue"),
+        axis.title.x = element_blank(),
+        axis.text.x = element_blank(),
+        axis.ticks.x = element_blank(),
+        legend.position = "bottom")  +
+  transition_reveal(released_at) + 
+  labs(subtitle = "Last release: {get_set_name((frame_along))} 
+       New commanders: {get_new_cmds((frame_along))}",
+       y = "Total legal commanders",
+       color = "Color ID",
+       caption = "Created by Karl Hailperin (@khailper)")
+
+set_count <- cmd_count %>% 
+  pull(set_name) %>% 
+  unique() %>% 
+  length()
+
+animate(cmd_anim, nframes = set_count * 4, duration = set_count)
+```
+
+We should also make it available as a video:
+```{r render_vid}
+animate(cmd_anim, 
+        nframes = set_count * 4, 
+        duration = set_count, 
+        renderer = av_renderer())
+```
+
